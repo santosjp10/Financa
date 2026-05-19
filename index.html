@@ -418,11 +418,153 @@ body {
 .export-btn.danger { color: #dc2626; border-color: #fecaca; }
 
 .divider { height: 1px; background: #e5e7eb; margin: 16px 0; }
+
+/* === LOCK SCREEN === */
+.lock-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: linear-gradient(160deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: lockFadeIn 0.3s ease;
+}
+@keyframes lockFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.lock-screen.hidden { display: none; }
+.lock-logo {
+  font-size: 64px; margin-bottom: 12px;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+}
+.lock-title {
+  color: white; font-size: 22px; font-weight: 700;
+  margin: 0 0 6px; letter-spacing: -0.3px;
+}
+.lock-subtitle {
+  color: rgba(255,255,255,0.8); font-size: 13px;
+  margin: 0 0 32px; text-align: center; max-width: 280px; line-height: 1.5;
+}
+.lock-form { width: 100%; max-width: 320px; }
+.lock-input-wrap { position: relative; margin-bottom: 12px; }
+.lock-input {
+  width: 100%; padding: 16px 48px 16px 18px;
+  font-size: 17px; letter-spacing: 2px;
+  background: rgba(255,255,255,0.15);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  border-radius: 14px; color: white;
+  font-family: inherit;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.lock-input::placeholder { color: rgba(255,255,255,0.5); letter-spacing: 0; font-size: 15px; }
+.lock-input:focus { outline: none; border-color: white; background: rgba(255,255,255,0.22); }
+.lock-input.shake { animation: shake 0.4s; border-color: #fca5a5; background: rgba(220,38,38,0.2); }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+.lock-eye {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  background: transparent; border: none; color: rgba(255,255,255,0.7);
+  font-size: 18px; cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.lock-btn {
+  width: 100%; padding: 15px;
+  background: white; color: #1e40af;
+  border: none; border-radius: 14px;
+  font-size: 15px; font-weight: 700;
+  cursor: pointer; margin-top: 4px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+.lock-btn:active { transform: scale(0.98); background: #f9fafb; }
+.lock-btn.secondary {
+  background: transparent; color: white;
+  box-shadow: none; font-weight: 500; font-size: 13px;
+  padding: 12px; margin-top: 8px;
+}
+.lock-error {
+  color: #fecaca; font-size: 12px; margin: 8px 0 0;
+  text-align: center; min-height: 18px;
+}
+.lock-hint {
+  color: rgba(255,255,255,0.7); font-size: 12px;
+  margin: 16px 0 0; text-align: center; line-height: 1.5;
+}
+.lock-attempts {
+  color: #fde047; font-size: 11px; margin-top: 8px;
+  text-align: center;
+}
+.lock-recovery {
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.lock-recovery-link {
+  color: rgba(255,255,255,0.8); font-size: 12px;
+  text-decoration: underline; cursor: pointer;
+  background: transparent; border: none;
+  display: block; margin: 0 auto;
+}
+.app-locked { display: none !important; }
+
+/* === SECURITY MODAL CONTENT === */
+.security-info {
+  background: #fef3c7; border-left: 3px solid #d97706;
+  padding: 10px 12px; border-radius: 8px;
+  font-size: 12px; color: #78350f;
+  margin-bottom: 14px; line-height: 1.5;
+}
 </style>
 </head>
 <body>
 
-<header class="app-header">
+<!-- LOCK SCREEN -->
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-logo">🔒</div>
+  <h1 class="lock-title" id="lock-title">Finanças Pessoais</h1>
+  <p class="lock-subtitle" id="lock-subtitle">Digite sua senha para acessar</p>
+
+  <form class="lock-form" id="lock-form" autocomplete="off">
+    <div class="lock-input-wrap">
+      <input
+        type="password"
+        class="lock-input"
+        id="lock-input-1"
+        placeholder="Senha"
+        inputmode="text"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+      <button type="button" class="lock-eye" id="lock-eye-1" aria-label="Mostrar senha">👁</button>
+    </div>
+
+    <div class="lock-input-wrap" id="lock-input-2-wrap" style="display:none">
+      <input
+        type="password"
+        class="lock-input"
+        id="lock-input-2"
+        placeholder="Confirme a senha"
+        inputmode="text"
+        autocomplete="off"
+        autocapitalize="off"
+        spellcheck="false"
+      >
+      <button type="button" class="lock-eye" id="lock-eye-2" aria-label="Mostrar senha">👁</button>
+    </div>
+
+    <button type="submit" class="lock-btn" id="lock-submit">Entrar</button>
+    <p class="lock-error" id="lock-error"></p>
+    <p class="lock-attempts" id="lock-attempts"></p>
+  </form>
+
+  <p class="lock-hint" id="lock-hint"></p>
+
+  <div class="lock-recovery" id="lock-recovery" style="display:none">
+    <button type="button" class="lock-recovery-link" id="lock-recovery-btn">Esqueci a senha</button>
+  </div>
+</div>
+
+<header class="app-header app-protected app-locked">
   <div class="app-title">
     <span>💰</span>
     <span>Finanças</span>
@@ -435,7 +577,7 @@ body {
   <button class="settings-btn" id="settings-btn" aria-label="Configurações">⚙</button>
 </header>
 
-<main>
+<main class="app-protected app-locked">
   <section id="screen-home" class="screen active"></section>
   <section id="screen-transactions" class="screen"></section>
   <section id="screen-calendar" class="screen"></section>
@@ -443,9 +585,9 @@ body {
   <section id="screen-reports" class="screen"></section>
 </main>
 
-<button class="fab" id="fab-btn" aria-label="Adicionar">+</button>
+<button class="fab app-protected app-locked" id="fab-btn" aria-label="Adicionar">+</button>
 
-<nav class="tab-bar">
+<nav class="tab-bar app-protected app-locked">
   <button class="tab active" data-screen="home"><span>🏠</span><span>Início</span></button>
   <button class="tab" data-screen="transactions"><span>📋</span><span>Lançam.</span></button>
   <button class="tab" data-screen="calendar"><span>📅</span><span>Calend.</span></button>
@@ -458,6 +600,340 @@ body {
 
 <script>
 'use strict';
+
+// =====================================================
+// AUTHENTICATION / LOCK SCREEN
+// =====================================================
+const AUTH_KEY = 'finapp_v2_auth';
+const SESSION_KEY = 'finapp_v2_session';
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutos de inatividade
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_MS = 60 * 1000; // 1 minuto de bloqueio após 5 tentativas
+
+let authState = loadAuthState();
+let pwVisible1 = false, pwVisible2 = false;
+let lockoutTimer = null;
+
+function loadAuthState() {
+  try {
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveAuthState() {
+  try { localStorage.setItem(AUTH_KEY, JSON.stringify(authState)); }
+  catch(e) { console.error('Auth save error:', e); }
+}
+
+// Hash seguro usando SubtleCrypto (PBKDF2 com 100k iterações)
+async function hashPassword(password, salt) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']
+  );
+  const saltBytes = enc.encode(salt);
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  return Array.from(new Uint8Array(bits))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateSalt() {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function isSessionValid() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+    const session = JSON.parse(raw);
+    if (Date.now() - session.lastActivity > SESSION_TIMEOUT_MS) {
+      sessionStorage.removeItem(SESSION_KEY);
+      return false;
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+function updateSession() {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({ lastActivity: Date.now() }));
+  } catch(e) {}
+}
+
+function clearSession() {
+  try { sessionStorage.removeItem(SESSION_KEY); } catch(e) {}
+}
+
+function unlockApp() {
+  updateSession();
+  document.getElementById('lock-screen').classList.add('hidden');
+  document.querySelectorAll('.app-protected').forEach(el => el.classList.remove('app-locked'));
+  // Inicializar app só agora
+  if (!window._appInitialized) {
+    window._appInitialized = true;
+    render();
+  }
+}
+
+function lockApp() {
+  clearSession();
+  document.getElementById('lock-screen').classList.remove('hidden');
+  document.querySelectorAll('.app-protected').forEach(el => el.classList.add('app-locked'));
+  // Limpar campos
+  document.getElementById('lock-input-1').value = '';
+  document.getElementById('lock-input-2').value = '';
+  document.getElementById('lock-error').textContent = '';
+  setupLockScreen();
+}
+
+function setupLockScreen() {
+  const isFirstTime = !authState;
+  const title = document.getElementById('lock-title');
+  const subtitle = document.getElementById('lock-subtitle');
+  const input2Wrap = document.getElementById('lock-input-2-wrap');
+  const submitBtn = document.getElementById('lock-submit');
+  const hint = document.getElementById('lock-hint');
+  const recovery = document.getElementById('lock-recovery');
+
+  if (isFirstTime) {
+    title.textContent = 'Crie sua senha';
+    subtitle.textContent = 'Defina uma senha para proteger seus dados financeiros neste dispositivo.';
+    input2Wrap.style.display = 'block';
+    submitBtn.textContent = 'Criar senha';
+    hint.innerHTML = 'Use no mínimo 4 caracteres.<br>⚠️ Anote em local seguro — não há como recuperá-la.';
+    recovery.style.display = 'none';
+  } else {
+    title.textContent = 'Finanças Pessoais';
+    subtitle.textContent = 'Digite sua senha para acessar';
+    input2Wrap.style.display = 'none';
+    submitBtn.textContent = 'Entrar';
+    hint.textContent = '';
+    recovery.style.display = 'block';
+  }
+
+  // Verificar lockout
+  if (authState && authState.lockedUntil && authState.lockedUntil > Date.now()) {
+    startLockoutCountdown();
+  } else {
+    updateAttemptsDisplay();
+  }
+
+  // Focus
+  setTimeout(() => document.getElementById('lock-input-1').focus(), 100);
+}
+
+function updateAttemptsDisplay() {
+  const el = document.getElementById('lock-attempts');
+  if (!authState || !authState.failedAttempts) {
+    el.textContent = '';
+    return;
+  }
+  const remaining = MAX_ATTEMPTS - authState.failedAttempts;
+  if (remaining < MAX_ATTEMPTS && remaining > 0) {
+    el.textContent = `${remaining} tentativa${remaining>1?'s':''} restante${remaining>1?'s':''}`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+function startLockoutCountdown() {
+  const submitBtn = document.getElementById('lock-submit');
+  const input1 = document.getElementById('lock-input-1');
+  const errorEl = document.getElementById('lock-error');
+  const attemptsEl = document.getElementById('lock-attempts');
+
+  function tick() {
+    const remaining = Math.ceil((authState.lockedUntil - Date.now()) / 1000);
+    if (remaining <= 0) {
+      clearInterval(lockoutTimer);
+      submitBtn.disabled = false;
+      input1.disabled = false;
+      submitBtn.style.opacity = '1';
+      errorEl.textContent = '';
+      attemptsEl.textContent = '';
+      authState.lockedUntil = null;
+      authState.failedAttempts = 0;
+      saveAuthState();
+      input1.focus();
+      return;
+    }
+    submitBtn.disabled = true;
+    input1.disabled = true;
+    submitBtn.style.opacity = '0.5';
+    errorEl.textContent = '🔒 Bloqueado temporariamente';
+    attemptsEl.textContent = `Tente novamente em ${remaining}s`;
+  }
+  tick();
+  lockoutTimer = setInterval(tick, 1000);
+}
+
+async function handleLockSubmit(e) {
+  e.preventDefault();
+  const errorEl = document.getElementById('lock-error');
+  const input1 = document.getElementById('lock-input-1');
+  const input2 = document.getElementById('lock-input-2');
+  const pw1 = input1.value;
+  const pw2 = input2.value;
+  errorEl.textContent = '';
+
+  const isFirstTime = !authState;
+
+  if (isFirstTime) {
+    // Criar senha
+    if (pw1.length < 4) {
+      errorEl.textContent = 'Senha muito curta (mín. 4 caracteres)';
+      input1.classList.add('shake');
+      setTimeout(() => input1.classList.remove('shake'), 400);
+      return;
+    }
+    if (pw1 !== pw2) {
+      errorEl.textContent = 'As senhas não coincidem';
+      input2.classList.add('shake');
+      setTimeout(() => input2.classList.remove('shake'), 400);
+      return;
+    }
+    // Gerar hash
+    const salt = generateSalt();
+    const hash = await hashPassword(pw1, salt);
+    authState = {
+      hash, salt,
+      createdAt: Date.now(),
+      failedAttempts: 0,
+      lockedUntil: null
+    };
+    saveAuthState();
+    unlockApp();
+    showToast('Senha criada com sucesso 🔒');
+    return;
+  }
+
+  // Verificar senha
+  if (authState.lockedUntil && authState.lockedUntil > Date.now()) return;
+
+  const hash = await hashPassword(pw1, authState.salt);
+  if (hash === authState.hash) {
+    // Sucesso
+    authState.failedAttempts = 0;
+    authState.lockedUntil = null;
+    saveAuthState();
+    unlockApp();
+  } else {
+    // Falha
+    authState.failedAttempts = (authState.failedAttempts || 0) + 1;
+    input1.value = '';
+    input1.classList.add('shake');
+    setTimeout(() => input1.classList.remove('shake'), 400);
+
+    if (authState.failedAttempts >= MAX_ATTEMPTS) {
+      authState.lockedUntil = Date.now() + LOCKOUT_MS;
+      saveAuthState();
+      startLockoutCountdown();
+    } else {
+      saveAuthState();
+      errorEl.textContent = 'Senha incorreta';
+      updateAttemptsDisplay();
+      setTimeout(() => input1.focus(), 100);
+    }
+  }
+}
+
+function togglePasswordVisibility(num) {
+  const input = document.getElementById('lock-input-' + num);
+  const eye = document.getElementById('lock-eye-' + num);
+  if (num === 1) {
+    pwVisible1 = !pwVisible1;
+    input.type = pwVisible1 ? 'text' : 'password';
+    eye.textContent = pwVisible1 ? '🙈' : '👁';
+  } else {
+    pwVisible2 = !pwVisible2;
+    input.type = pwVisible2 ? 'text' : 'password';
+    eye.textContent = pwVisible2 ? '🙈' : '👁';
+  }
+}
+
+function showRecoveryDialog() {
+  const html = `
+    <div class="modal-header">
+      <p class="modal-title">🔑 Esqueci a senha</p>
+      <button class="modal-close" id="close-modal">×</button>
+    </div>
+    <div class="security-info">
+      ⚠️ <strong>Por segurança, a senha não pode ser recuperada.</strong>
+      A única forma de voltar a acessar é redefinindo a senha — porém isso <strong>apagará todos os dados</strong> deste dispositivo.
+    </div>
+    <p style="font-size:13px;color:#4b5563;line-height:1.5;margin:0 0 16px">
+      Se você tem um <strong>arquivo de backup</strong> exportado anteriormente,
+      pode redefinir a senha e depois importar seus dados de volta normalmente
+      pelo menu de configurações.
+    </p>
+    <div class="form-actions">
+      <button class="btn-secondary" id="recovery-cancel">Cancelar</button>
+      <button class="btn-primary" id="recovery-reset" style="background:#dc2626">Redefinir senha</button>
+    </div>
+  `;
+
+  const container = document.createElement('div');
+  container.innerHTML = `<div class="modal-overlay" id="recovery-overlay" style="z-index:10000;position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;max-width:480px;margin:0 auto"><div class="modal">${html}</div></div>`;
+  document.body.appendChild(container);
+
+  const close = () => container.remove();
+  document.getElementById('close-modal').addEventListener('click', close);
+  document.getElementById('recovery-cancel').addEventListener('click', close);
+  document.getElementById('recovery-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'recovery-overlay') close();
+  });
+  document.getElementById('recovery-reset').addEventListener('click', () => {
+    if (!confirm('ATENÇÃO: Isso apagará TODOS os dados financeiros deste dispositivo. Confirma?')) return;
+    if (!confirm('Tem certeza absoluta? Esta ação não pode ser desfeita.')) return;
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(STORAGE_KEY);
+    sessionStorage.clear();
+    location.reload();
+  });
+}
+
+// Configurar event listeners da tela de bloqueio
+document.getElementById('lock-form').addEventListener('submit', handleLockSubmit);
+document.getElementById('lock-eye-1').addEventListener('click', () => togglePasswordVisibility(1));
+document.getElementById('lock-eye-2').addEventListener('click', () => togglePasswordVisibility(2));
+document.getElementById('lock-recovery-btn').addEventListener('click', showRecoveryDialog);
+
+// Sempre exigir senha ao abrir o app (sessão apenas para timeout de inatividade)
+if (authState) {
+  setupLockScreen();
+} else {
+  setupLockScreen();
+}
+
+// Atualizar timestamp de atividade em interações
+['click', 'keydown', 'touchstart'].forEach(ev => {
+  document.addEventListener(ev, () => {
+    if (!document.getElementById('lock-screen').classList.contains('hidden')) return;
+    updateSession();
+  }, { passive: true });
+});
+
+// Travar app quando ficar em background por muito tempo (visibilidade)
+let hiddenSince = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    hiddenSince = Date.now();
+  } else {
+    if (hiddenSince && (Date.now() - hiddenSince > SESSION_TIMEOUT_MS)) {
+      if (authState && !document.getElementById('lock-screen').classList.contains('hidden') === false) {
+        lockApp();
+      }
+    }
+    hiddenSince = null;
+  }
+});
 
 // =====================================================
 // STORAGE & STATE
@@ -1446,6 +1922,14 @@ function openSettingsModal() {
       <p style="margin:0">${dataSize} KB · ${billCount} despesas fixas · ${incomeCount} receitas · ${extraCount} avulsos</p>
     </div>
 
+    <p style="font-size:12px;color:#6b7280;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Segurança</p>
+    <div class="export-row">
+      <button class="export-btn" id="change-password">🔑 Alterar senha</button>
+      <button class="export-btn" id="lock-now">🔒 Bloquear app</button>
+    </div>
+
+    <div class="divider"></div>
+
     <p style="font-size:12px;color:#6b7280;margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600">Backup</p>
     <div class="export-row">
       <button class="export-btn" id="export-json">📥 Exportar dados</button>
@@ -1470,6 +1954,18 @@ function openSettingsModal() {
   `);
 
   document.getElementById('close-modal').addEventListener('click', closeModal);
+
+  // Segurança: alterar senha
+  document.getElementById('change-password').addEventListener('click', () => {
+    closeModal();
+    openChangePasswordModal();
+  });
+
+  // Segurança: bloquear app
+  document.getElementById('lock-now').addEventListener('click', () => {
+    closeModal();
+    lockApp();
+  });
 
   document.getElementById('export-json').addEventListener('click', () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
@@ -1530,6 +2026,71 @@ function openSettingsModal() {
 // =====================================================
 // MAIN RENDER
 // =====================================================
+function openChangePasswordModal() {
+  showModal(`
+    <div class="modal-header">
+      <p class="modal-title">🔑 Alterar senha</p>
+      <button class="modal-close" id="close-modal">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Senha atual</label>
+      <input type="password" class="form-input" id="cp-current" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nova senha (mín. 4 caracteres)</label>
+      <input type="password" class="form-input" id="cp-new" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Confirmar nova senha</label>
+      <input type="password" class="form-input" id="cp-confirm" autocomplete="off" autocapitalize="off" spellcheck="false">
+    </div>
+    <p style="font-size:12px;color:#dc2626;margin:0 0 12px;text-align:center;min-height:18px" id="cp-error"></p>
+    <div class="form-actions">
+      <button class="btn-secondary" id="cp-cancel">Cancelar</button>
+      <button class="btn-primary" id="cp-save">Alterar</button>
+    </div>
+  `);
+
+  setTimeout(() => document.getElementById('cp-current').focus(), 200);
+
+  document.getElementById('cp-cancel').addEventListener('click', closeModal);
+  document.getElementById('close-modal').addEventListener('click', closeModal);
+  document.getElementById('cp-save').addEventListener('click', async () => {
+    const errorEl = document.getElementById('cp-error');
+    const current = document.getElementById('cp-current').value;
+    const newPw = document.getElementById('cp-new').value;
+    const confirm = document.getElementById('cp-confirm').value;
+
+    errorEl.textContent = '';
+
+    // Verificar senha atual
+    const currentHash = await hashPassword(current, authState.salt);
+    if (currentHash !== authState.hash) {
+      errorEl.textContent = 'Senha atual incorreta';
+      return;
+    }
+    if (newPw.length < 4) {
+      errorEl.textContent = 'Nova senha muito curta (mín. 4 caracteres)';
+      return;
+    }
+    if (newPw !== confirm) {
+      errorEl.textContent = 'As senhas não coincidem';
+      return;
+    }
+
+    // Gerar novo hash com novo salt
+    const newSalt = generateSalt();
+    const newHash = await hashPassword(newPw, newSalt);
+    authState.hash = newHash;
+    authState.salt = newSalt;
+    authState.failedAttempts = 0;
+    authState.lockedUntil = null;
+    saveAuthState();
+    closeModal();
+    showToast('Senha alterada com sucesso 🔒');
+  });
+}
+
 function render() {
   document.getElementById('month-label').textContent =
     `${monthShort[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
@@ -1620,8 +2181,8 @@ document.addEventListener('touchend', (e) => {
   touchStartX = 0;
 }, { passive: true });
 
-// Initial render
-render();
+// Initial render (called by unlockApp after authentication)
+// render() is called from unlockApp() once user is authenticated
 
 // Save indicator
 window.addEventListener('beforeunload', saveState);
